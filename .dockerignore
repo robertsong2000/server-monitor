@@ -1,0 +1,27 @@
+# 构建产物 / 二进制
+server_monitor
+*.exe
+
+# 数据库文件（运行时生成，不应进镜像）
+*.db
+*.db-wal
+*.db-shm
+data/
+
+# Git
+.git
+.gitignore
+
+# 文档
+README.md
+*.md
+
+# IDE / 系统
+.DS_Store
+.idea
+.vscode
+
+# Docker 自身（避免循环拷贝）
+Dockerfile
+docker-compose*.yml
+.dockerignore

@@ -1,0 +1,42 @@
+# ============================================================
+# Server Monitor - Docker Compose
+# 一键启动：docker compose up -d
+# ============================================================
+services:
+  server-monitor:
+    build: .
+    image: server-monitor:latest
+    container_name: server-monitor
+    restart: unless-stopped
+
+    ports:
+      - "${HOST_PORT:-8080}:8080"
+
+    volumes:
+      # 数据库持久化（避免重建容器丢失监控配置与历史）
+      - monitor-data:/app/data
+
+    environment:
+      # 监听地址（容器内必须为 :8080，端口映射在 ports 里调整）
+      ADDR: ":8080"
+      # 数据库路径（指向上面的 volume）
+      DB_PATH: /app/data/monitor.db
+      # 静态资源目录
+      STATIC_DIR: /app/static
+
+    # ICMP 检查需要 raw socket 权限。
+    # 授予 cap_net_raw 后，容器内的 ICMP ping 才能真正工作；
+    # 未授予时会自动回退为 TCP ping（程序内置降级逻辑）。
+    cap_add:
+      - NET_RAW
+
+    # 健康检查状态展示
+    healthcheck:
+      test: ["CMD", "wget", "-qO-", "http://127.0.0.1:8080/"]
+      interval: 30s
+      timeout: 5s
+      retries: 3
+      start_period: 5s
+
+volumes:
+  monitor-data:
